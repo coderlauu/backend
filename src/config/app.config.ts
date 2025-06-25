@@ -21,3 +21,8 @@ export const AppConfig = registerAs(appKey, () => ({
 }))
 
 export type TAppConfig = ConfigType<typeof AppConfig>
+
+export const RouterWhiteList: string[] = [
+  `${globalPrefix ? '/' : ''}${globalPrefix}/auth/captcha/img`,
+  `${globalPrefix ? '/' : ''}${globalPrefix}/auth/login`,
+]
