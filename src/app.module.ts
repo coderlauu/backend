@@ -12,6 +12,11 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor'
 import { AllExceptionsFilter } from './common/filter/any-exception.filter'
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './module/user/user.module';
+import { UserService } from './modules/user/user.service';
+import { UserController } from './modules/user/user.controller';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -39,6 +44,8 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
     /** redis、mailer、helper */
     SharedModule,
     DatabaseModule,
+    AuthModule,
+    UserModule,
   ],
   providers: [
     /** 全局异常过滤器 */
@@ -50,7 +57,10 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
     { provide: APP_INTERCEPTOR, useFactory: () => new TimeoutInterceptor(15 * 1000) },
 
     /**  */
-    { provide: APP_GUARD, useClass: JwtAuthGuard }
-  ]
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+
+    UserService
+  ],
+  controllers: [UserController]
 })
 export class AppModule {}
