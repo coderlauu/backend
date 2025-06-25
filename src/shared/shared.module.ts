@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { LoggerModule } from './logger/logger.module'
-import { RedisModule } from './redis/redis.module';
+import { RedisModule } from './redis/redis.module'
 
 @Module({
   imports: [
@@ -8,6 +8,6 @@ import { RedisModule } from './redis/redis.module';
     LoggerModule.forRoot(),
     RedisModule,
   ],
-  exports: [],
+  exports: [RedisModule],
 })
 export class SharedModule {}
