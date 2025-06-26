@@ -19,9 +19,11 @@ export abstract class CommonEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
+  /** 自动设置为实体的插入日期 */
   @CreateDateColumn({ name: 'created_at', transformer })
   createdAt: Date
 
+  /** 每次调用实体管理器或存储库的 save 时，它都会自动设置为实体的更新时间 */
   @UpdateDateColumn({ name: 'updated_at', transformer })
   updatedAt: Date
 }

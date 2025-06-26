@@ -1,8 +1,8 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger'
 import { Column, Entity, JoinTable, ManyToMany, Relation } from 'typeorm'
 import { CompleteEntity } from '~/common/entity/common.entity'
-import { UserEntity } from '~/modules/user/user.entity'
 import { MenuEntity } from '~/modules/system/menu/menu.entity'
+import { UserEntity } from '~/modules/user/user.entity'
 
 @Entity({ name: 'sys_role' })
 export class RoleEntity extends CompleteEntity {
@@ -33,14 +33,14 @@ export class RoleEntity extends CompleteEntity {
   @ApiHideProperty()
   @ManyToMany(() => MenuEntity, menu => menu.roles)
   @JoinTable({
-    name: 'sys_role_menus',
+    name: 'sys_role_menus', // 中间表的名称
     joinColumn: {
-      name: 'role_id',
-      referencedColumnName: 'id',
+      name: 'role_id', // 中间表的 role_id 字段
+      referencedColumnName: 'id', // 引用 Role 表的 id 字段
     },
     inverseJoinColumn: {
-      name: 'menu_id',
-      referencedColumnName: 'id',
+      name: 'menu_id', // 中间表的 menu_id 字段
+      referencedColumnName: 'id', // 引用 Menu 表的 id 字段
     },
   })
   menus: Relation<MenuEntity[]>
