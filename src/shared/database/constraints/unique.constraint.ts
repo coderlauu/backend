@@ -48,10 +48,10 @@ export class UniqueConstraint implements ValidatorConstraintInterface {
             }
 
             let extractWhere = {}
-            const operatorId = this.cls.get('operatorId')
+            const operateId = this.cls.get('operateId')
             // 有id则说明是编辑操作，则将自身排除
-            if (Number.isInteger(operatorId)) {
-                extractWhere = { id: Not(operatorId) }
+            if (Number.isInteger(operateId)) {
+                extractWhere = { id: Not(operateId) }
             }
 
             // isNil 判断是否为null或undefined

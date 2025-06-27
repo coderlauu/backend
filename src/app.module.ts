@@ -13,10 +13,12 @@ import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor'
 import { AllExceptionsFilter } from './common/filter/any-exception.filter'
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
 import { AuthModule } from './modules/auth/auth.module';
-import { UserModule } from './module/user/user.module';
+import { UserModule } from './modules/user/user.module';
 import { UserService } from './modules/user/user.service';
 import { UserController } from './modules/user/user.controller';
-import { UserModule } from './modules/user/user.module';
+import { AuthService } from './modules/auth/auth.service'
+import { RoleModule } from './modules/system/role/role.module';
+import { LogModule } from './modules/system/log/log.module';
 
 @Module({
   imports: [
@@ -45,7 +47,8 @@ import { UserModule } from './modules/user/user.module';
     SharedModule,
     DatabaseModule,
     AuthModule,
-    UserModule,
+    RoleModule,
+    LogModule,
   ],
   providers: [
     /** 全局异常过滤器 */
@@ -58,9 +61,6 @@ import { UserModule } from './modules/user/user.module';
 
     /**  */
     { provide: APP_GUARD, useClass: JwtAuthGuard },
-
-    UserService
-  ],
-  controllers: [UserController]
+  ]
 })
 export class AppModule {}

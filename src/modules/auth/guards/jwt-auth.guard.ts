@@ -12,6 +12,7 @@ import { AppConfig, RouterWhiteList, TAppConfig } from '~/config'
 import { ErrorEnum } from '~/constants/error-code.constant'
 import { genTokenBlacklistKey } from '~/helper/genRedisKey'
 import { AuthStrategy, PUBLIC_KEY } from '../auth.constant'
+import { AuthService } from '../auth.service'
 
 interface RequestType {
   Params: {
@@ -28,8 +29,8 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
 
   constructor(
     private reflector: Reflector,
-    private authService: any,
-    private tokenService: any,
+    private authService: AuthService,
+    // private tokenService: any,
     @InjectRedis() private readonly redis: Redis,
     @Inject(AppConfig.KEY) private appConfig: TAppConfig,
   ) {
@@ -79,7 +80,7 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
     catch (error) {
       /** 后置判断（因为携带token的用户才能在try中解析到用户信息）；白名单放行！ */
       if (isPublic)
-        return
+        return true
 
       /** 无token 处理 */
       if (isEmpty(token)) {
@@ -90,5 +91,7 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
         throw new BusinessException(ErrorEnum.INVALID_LOGIN)
       }
     }
+
+    return result
   }
 }

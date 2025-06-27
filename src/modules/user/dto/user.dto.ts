@@ -70,14 +70,14 @@ export class UserDto {
 
 export class UserUpdateDto extends PartialType(UserDto) {}
 
-export class UserQueryDto extends IntersectionType(PagerDto<UserDto>, PartialType(UserDto)) {
-  @ApiProperty({ description: '归属大区', example: 1, required: false })
-  @IsInt()
-  @IsOptional()
-  deptId?: number
+// export class UserQueryDto extends IntersectionType(PagerDto<UserDto>, PartialType(UserDto)) {
+//   @ApiProperty({ description: '归属大区', example: 1, required: false })
+//   @IsInt()
+//   @IsOptional()
+//   deptId?: number
 
-  @ApiProperty({ description: '状态', example: 0, required: false })
-  @IsInt()
-  @IsOptional()
-  status?: number
-}
+//   @ApiProperty({ description: '状态', example: 0, required: false })
+//   @IsInt()
+//   @IsOptional()
+//   status?: number
+// }

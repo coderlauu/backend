@@ -7,6 +7,7 @@ import { UserService } from './user.service'
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity]),
+    // RoleModule
   ],
   controllers: [UserController],
   providers: [UserService], // 服务提供者（只在本模块内可用）
