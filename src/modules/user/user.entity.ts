@@ -10,7 +10,7 @@ export class UserEntity extends CommonEntity {
   @Column({ length: 50 })
   username!: string
 
-  @Exclude()
+  @Exclude() /** @Exclude() 需要序列化处理：class-transformer 的装饰器需要通过序列化才能生效 */
   @Column({ length: 50 })
   password!: string
 

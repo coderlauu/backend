@@ -5,15 +5,21 @@ import { PassportModule } from '@nestjs/passport'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { securityKey, TSecurityConfig } from '~/config/security.config'
 import { isDev } from '~/global/env'
+import { LogModule } from '../system/log/log.module'
+import { RoleModule } from '../system/role/role.module'
+import { UserModule } from '../user/user.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
+import { CaptchaController } from './controllers/captcha.controller'
 import { AccessTokenEntity } from './entities/access-token.entity'
 import { RefreshTokenEntity } from './entities/refresh-token.entity'
-import { UserModule } from '../user/user.module'
-import { RoleModule } from '../system/role/role.module'
-import { LogModule } from '../system/log/log.module'
-import { TokenService } from './services/token.service'
 import { CaptchaService } from './services/captcha.service'
+import { TokenService } from './services/token.service'
+import { JwtStrategy } from './strategies/jwt.strategy'
+import { AccountController } from './controllers/account.controller';
+
+const providers = [AuthService, TokenService, CaptchaService]
+const strategies = [JwtStrategy]
 
 @Module({
   imports: [
@@ -30,7 +36,7 @@ import { CaptchaService } from './services/captcha.service'
         return {
           secret: jwtSecret,
           signOptions: {
-            expiresIn: jwtExpire,
+            expiresIn: `${jwtExpire}s`,
           },
           ignoreExpiration: isDev,
         }
@@ -38,8 +44,8 @@ import { CaptchaService } from './services/captcha.service'
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, TokenService, CaptchaService],
-  exports: [AuthService]
+  controllers: [AuthController, CaptchaController, AccountController],
+  providers: [...providers, ...strategies],
+  exports: [...providers],
 })
 export class AuthModule {}

@@ -33,9 +33,9 @@ export function ApiResult<TModel extends Type<any>>({
       prop = {
         type: 'object',
         properties: {
-          items: {
+          list: {
             type: 'array',
-            items: { $ref: getSchemaPath(type[0]) },
+            list: { $ref: getSchemaPath(type[0]) },
           },
           meta: {
             type: 'object',
@@ -53,7 +53,7 @@ export function ApiResult<TModel extends Type<any>>({
     else {
       prop = {
         type: 'array',
-        items: genBaseProp(type[0]),
+        list: genBaseProp(type[0]),
       }
     }
   }
@@ -67,13 +67,13 @@ export function ApiResult<TModel extends Type<any>>({
   const model = Array.isArray(type) ? type[0] : type
 
   return applyDecorators(
-    ApiExtraModels(model),         // 注册模型到 Swagger
+    ApiExtraModels(model), // 注册模型到 Swagger
     (
       target: object,
       key: string | symbol,
       descriptor: TypedPropertyDescriptor<any>,
-    ) => {  // 自定义装饰器逻辑
-      queueMicrotask(() => {       // 异步执行，确保其他装饰器先执行
+    ) => { // 自定义装饰器逻辑
+      queueMicrotask(() => { // 异步执行，确保其他装饰器先执行 --确保这个装饰器在其他装饰器（如 @Post(), @Get()）执行完后再执行
         // 检测HTTP方法
         const isPost = Reflect.getMetadata(METHOD_METADATA, descriptor.value) === RequestMethod.POST
 
@@ -81,11 +81,11 @@ export function ApiResult<TModel extends Type<any>>({
         ApiResponse({
           status: status ?? (isPost ? HttpStatus.CREATED : HttpStatus.OK), // POST=201, 其他=200
           schema: {
-            allOf: [                          // 合并多个 schema
+            allOf: [ // 合并多个 schema
               { $ref: getSchemaPath(ResOp) }, // 基础响应结构 (code, message)
               {
                 properties: {
-                  data: prop,                 // 具体的数据结构
+                  data: prop, // 具体的数据结构
                 },
               },
             ],

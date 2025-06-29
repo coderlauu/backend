@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
 import { FastifyRequest } from 'fastify'
 import Redis from 'ioredis'
-import { isEmpty } from 'lodash'
+import { isEmpty, isNil } from 'lodash'
 import { ExtractJwt } from 'passport-jwt'
 import { Observable } from 'rxjs'
 import { InjectRedis } from '~/common/decorators/inject-redis.decorator'
@@ -13,6 +13,7 @@ import { ErrorEnum } from '~/constants/error-code.constant'
 import { genTokenBlacklistKey } from '~/helper/genRedisKey'
 import { AuthStrategy, PUBLIC_KEY } from '../auth.constant'
 import { AuthService } from '../auth.service'
+import { TokenService } from '../services/token.service'
 
 interface RequestType {
   Params: {
@@ -23,6 +24,11 @@ interface RequestType {
   }
 }
 
+/** 
+ * JwtAuthGuard 需要一个对应的Passport JWT 策略才能生效；
+ * 通过 Passport.js 的策略机制 被间接使用的 
+ * 因此需要在 auth.module.ts中注册对应的策略
+ * */
 @Injectable()
 export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
   jwtFromRequestFn = ExtractJwt.fromAuthHeaderAsBearerToken()
@@ -30,7 +36,7 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
   constructor(
     private reflector: Reflector,
     private authService: AuthService,
-    // private tokenService: any,
+    private tokenService: TokenService,
     @InjectRedis() private readonly redis: Redis,
     @Inject(AppConfig.KEY) private appConfig: TAppConfig,
   ) {
@@ -64,7 +70,10 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
     // 获取token
     const token = this.jwtFromRequestFn(request)
 
-    /** 检查token是否在黑名单列表 */
+    /** 
+     * 检查token是否在黑名单列表
+     * 如果存在，则认为该token已失效，拒绝访问
+     */
     if (await this.redis.get(genTokenBlacklistKey(token))) {
       throw new BusinessException(ErrorEnum.INVALID_LOGIN)
     }
@@ -90,8 +99,17 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
       if (error instanceof UnauthorizedException) {
         throw new BusinessException(ErrorEnum.INVALID_LOGIN)
       }
-    }
 
+      // 判断 token 是否有效且存在？如果不存在则认证失败
+      const isValid = isNil(token)
+        ? undefined
+        : await this.tokenService.checkAccessToken(token!)
+        
+      if (!isValid) {
+        throw new BusinessException(ErrorEnum.INVALID_LOGIN)
+      }
+    }
+    
     return result
   }
 }

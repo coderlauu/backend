@@ -6,6 +6,9 @@ import dayjs from "dayjs";
 import { SecurityConfig, TSecurityConfig } from "~/config/security.config";
 import { generateUUID } from "~/utils";
 import { RefreshTokenEntity } from "../entities/refresh-token.entity";
+import { InjectRedis } from "~/common/decorators/inject-redis.decorator";
+import Redis from "ioredis";
+import { genOnlineUserKey } from "~/helper/genRedisKey";
 
 
 
@@ -17,9 +20,9 @@ export class TokenService {
     constructor(
         private readonly jwtService: JwtService,
         /** 自定义装饰器  注入 -->等价于 @Inject(REDIS_CLIENT) private redis: Redis */
-        // @InjectRedis() private redis: Redis,
+        @InjectRedis() private redis: Redis,
         /** 标准装饰器 注入 */
-        @Inject(SecurityConfig.KEY) private readonly securityConfig: TSecurityConfig
+        @Inject(SecurityConfig.KEY) private readonly securityConfig: TSecurityConfig,
     ) {}
 
     async generateAccessToken(uid: number, roles: string[] = []): Promise<{ accessToken: string, refreshToken: string }> {
@@ -67,4 +70,47 @@ export class TokenService {
 
         return refreshTokenSign
     }
+
+    /**
+     * 检查 accessToken 是否有效
+     * @param value accessToken
+     * @returns 如果有效返回 true，否则返回 false
+     */
+    async checkAccessToken(value: string): Promise<boolean> {
+        let isValid = false
+        try {
+            await this.verifyAccessToken(value)
+            const res = await AccessTokenEntity.findOne({
+                where: { value },
+                relations: ['user', 'refreshToken'],
+                cache: true
+            })
+            isValid = Boolean(res)
+        } catch (error) {}
+        return isValid
+    }
+
+    /**
+     * 验证 accessToken
+     * @param token accessToken
+     * @returns 如果正确返回用户对象
+     */
+    async verifyAccessToken(token: string): Promise<IAuthUser> {
+        return this.jwtService.verifyAsync(token)
+    }
+
+    /**
+     * 移除 accessToken 及相关联的 refreshToken
+     * @param value accessToken
+     */
+    async removeAccessToken(value: string) {
+        const accessToken = await AccessTokenEntity.findOne({
+            where: { value }
+        })
+        if (accessToken) {
+            await this.redis.del(genOnlineUserKey(accessToken.id))
+            await accessToken.remove()
+        }
+    }
+
 }

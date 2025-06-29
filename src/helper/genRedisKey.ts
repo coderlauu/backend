@@ -19,3 +19,13 @@ export function genAuthPVKey(val: string | number) {
 export function genCaptchaImgKey(val: string | number) {
   return `${RedisKeys.CAPTCHA_IMG_PREFIX}${String(val)}` as const
 }
+
+/** 生成 online user redis key */
+export function genOnlineUserKey(tokenId: string) {
+  return `${RedisKeys.ONLINE_USER_PREFIX}${String(tokenId)}` as const
+}
+
+/** 生成 auth permission redis key */
+export function genAuthPermKey(val: string | number) {
+  return `${RedisKeys.AUTH_PERM_PREFIX}${String(val)}` as const
+}
