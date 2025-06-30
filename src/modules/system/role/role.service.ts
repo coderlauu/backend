@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { RoleEntity } from './role.entity';
 import { Repository } from 'typeorm';
 import { isEmpty } from 'lodash';
+import { ROOT_ROLE_ID } from '~/constants/system.constant';
 
 @Injectable()
 export class RoleService {
@@ -24,5 +25,9 @@ export class RoleService {
         }
 
         return []
+    }
+
+    hasAdminRole(roleIds: number[]): boolean {
+        return roleIds.includes(ROOT_ROLE_ID)
     }
 }

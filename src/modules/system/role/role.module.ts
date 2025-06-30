@@ -11,6 +11,7 @@ import { RoleEntity } from './role.entity';
     // forwardRef(() => MenuModule),
   ],
   controllers: [RoleController],
-  providers: [RoleService]
+  providers: [RoleService],
+  exports: [RoleService]
 })
 export class RoleModule {}

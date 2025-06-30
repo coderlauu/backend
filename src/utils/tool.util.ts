@@ -47,4 +47,10 @@ export const hashString = function (str, seed = 0) {
   return 4294967296 * (2097151 & h2) + (h1 >>> 0)
 }
 
+/**
+ * @example   
+    /api//user///list → /api/user/list
+    https://example.com//path → https://example.com/path
+    //path//to//file → /path/to/file
+ */
 export const uniqueSlash = (path: string) => path.replace(/(https?:\/)|(\/)+/g, '$1$2')

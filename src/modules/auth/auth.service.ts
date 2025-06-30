@@ -16,12 +16,16 @@ import { UserService } from '../user/user.service'
 import { LoginDto, RegisterDto } from './dto/auth.dto'
 import { TokenService } from './services/token.service'
 import { AppConfig, TAppConfig } from '~/config'
+import { AccountMenus } from './dto/account.dto'
+import { MenuService } from '../system/menu/menu.service'
+import { RouteRecordRaw } from '~/utils/permission.util'
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     // private readonly roleService: RoleService,
+    private readonly menuService: MenuService,
     private readonly tokenService: TokenService,
     @InjectRedis() private readonly redis: Redis,
     @Inject(SecurityConfig.KEY) private readonly securityConfig: TSecurityConfig,
@@ -77,6 +81,11 @@ export class AuthService {
     return token.accessToken
   }
 
+  /**
+   * 
+   * @param user 
+   * @param accessToken 
+   */
   async clearLoginStatus(user: IAuthUser, accessToken: string): Promise<void> {
     /**
      * 计算token剩余有效期；   
@@ -112,5 +121,23 @@ export class AuthService {
     else {
       await this.userService.forbidden(user.uid, accessToken)
     }
+  }
+
+  /**
+   * 获取用户菜单
+   * @param uid 用户id
+   * @returns 菜单列表
+   */
+  async getMenus(uid: number): Promise<RouteRecordRaw[]> {
+    return await this.menuService.getMenus(uid)
+  }
+
+  /**
+   * 获取用户权限
+   * @param uid 用户id
+   * @returns 权限列表
+   */
+  async getPermissions(uid: number): Promise<string[]> {
+    return await this.menuService.getPermissions(uid)
   }
 }

@@ -17,6 +17,7 @@ import { CaptchaService } from './services/captcha.service'
 import { TokenService } from './services/token.service'
 import { JwtStrategy } from './strategies/jwt.strategy'
 import { AccountController } from './controllers/account.controller';
+import { MenuModule } from '../system/menu/menu.module'
 
 const providers = [AuthService, TokenService, CaptchaService]
 const strategies = [JwtStrategy]
@@ -26,6 +27,7 @@ const strategies = [JwtStrategy]
     TypeOrmModule.forFeature([AccessTokenEntity, RefreshTokenEntity]),
     UserModule,
     RoleModule,
+    MenuModule,
     PassportModule,
     LogModule,
     JwtModule.registerAsync({

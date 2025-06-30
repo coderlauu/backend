@@ -8,7 +8,8 @@ import { AuthUser } from '../decorators/auth-user.decorator';
 import { UserService } from '~/modules/user/user.service';
 import type { FastifyRequest } from 'fastify';
 import { AuthService } from '../auth.service';
-import { AccountUpdateDto } from '../dto/account.dto';
+import { AccountMenus, AccountUpdateDto } from '../dto/account.dto';
+import { RouteRecordRaw } from '~/utils/permission.util';
 
 @ApiTags('Account - 账户模块')
 @ApiSecurityAuth()
@@ -39,6 +40,22 @@ export class AccountController {
     @AllowAnon()
     async update(@AuthUser() user: IAuthUser, @Body() dto: AccountUpdateDto): Promise<void> {
         await this.userService.updateAccountInfo(user.uid, dto)
+    }
+
+    @Get('menus')
+    @ApiOperation({ summary: '获取用户菜单' })
+    @ApiResult({ type: [AccountMenus] })
+    @AllowAnon()
+    async menus(@AuthUser() user: IAuthUser) {
+        return await this.authService.getMenus(user.uid)
+    }
+
+    @Get('permissions')
+    @ApiOperation({ summary: '获取用户权限' })
+    @ApiResult({ type: [String] })
+    @AllowAnon()
+    async permissions(@AuthUser() user: IAuthUser): Promise<string[]> {
+        return await this.authService.getPermissions(user.uid)
     }
 }
 

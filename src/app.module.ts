@@ -20,6 +20,7 @@ import { UserService } from './modules/user/user.service'
 import { DatabaseModule } from './shared/database/database.module'
 import { SharedModule } from './shared/shared.module'
 import { IdempotenceInterceptor } from './common/interceptors/idempotence.interceptor'
+import { MenuModule } from './modules/system/menu/menu.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { IdempotenceInterceptor } from './common/interceptors/idempotence.interc
     AuthModule,
     RoleModule,
     LogModule,
+    MenuModule,
   ],
   providers: [
     /**
