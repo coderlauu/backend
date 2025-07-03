@@ -30,7 +30,7 @@ export class UserDto {
   @ArrayMaxSize(3)
   roleIds: number[]
 
-  @ApiProperty({ description: '归属大区', type: Number })
+  @ApiProperty({ description: '所属部门', type: Number })
   @Type(() => Number)
   @IsInt()
   @IsOptional()

@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { ApiResult } from '~/common/decorators/api-result.decorator'
+import { IdParam } from '~/common/decorators/id-param.decorator'
 import { ApiSecurityAuth } from '~/common/decorators/swagger.decorator'
 import { UserDto, UserQueryDto } from './dto/user.dto'
 import { UserEntity } from './user.entity'
 import { UserService } from './user.service'
-import { IdParam } from '~/common/decorators/id-param.decorator'
 
 @ApiTags('System - 用户模块')
 @ApiSecurityAuth() // 在生成的 Swagger 文档中，这个 API 端点就会显示需要 auth 认证
@@ -29,6 +29,6 @@ export class UserController {
   @Post()
   @ApiOperation({ summary: '新增用户' })
   async create(@Body() dto: UserDto): Promise<void> {
-    // await this.userService.create(dto)
+    await this.userService.create(dto)
   }
 }

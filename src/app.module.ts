@@ -7,20 +7,14 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { ClsModule } from 'nestjs-cls'
 import config from '~/config'
 import { AllExceptionsFilter } from './common/filter/any-exception.filter'
+import { IdempotenceInterceptor } from './common/interceptors/idempotence.interceptor'
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor'
 import { AuthModule } from './modules/auth/auth.module'
-import { AuthService } from './modules/auth/auth.service'
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
-import { LogModule } from './modules/system/log/log.module'
-import { RoleModule } from './modules/system/role/role.module'
-import { UserController } from './modules/user/user.controller'
-import { UserModule } from './modules/user/user.module'
-import { UserService } from './modules/user/user.service'
+import { SystemModule } from './modules/system/system.module'
 import { DatabaseModule } from './shared/database/database.module'
 import { SharedModule } from './shared/shared.module'
-import { IdempotenceInterceptor } from './common/interceptors/idempotence.interceptor'
-import { MenuModule } from './modules/system/menu/menu.module';
 
 @Module({
   imports: [
@@ -49,9 +43,7 @@ import { MenuModule } from './modules/system/menu/menu.module';
     SharedModule,
     DatabaseModule,
     AuthModule,
-    RoleModule,
-    LogModule,
-    MenuModule,
+    SystemModule,
   ],
   providers: [
     /**
@@ -61,7 +53,6 @@ import { MenuModule } from './modules/system/menu/menu.module';
      * @description 全局过滤器
      */
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
-
 
     /**
      * 作用：自动序列化响应对象
@@ -98,7 +89,7 @@ import { MenuModule } from './modules/system/menu/menu.module';
      * 功能：检查请求中的 JWT token 是否有效
      * 效果：未登录用户无法访问受保护的 API
      * @description JWT 身份验证守卫
-     * 
+     *
      * 🔄 工作流程图
      * 用户请求 → JwtAuthGuard (全局) → Passport.js → 查找 'jwt' 策略 → JwtStrategy.validate()
      * ↓

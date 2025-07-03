@@ -1,36 +1,39 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import Redis from 'ioredis'
 import { isEmpty, isNil } from 'lodash'
 import { use } from 'passport'
 import { EntityManager, In, Like, Repository } from 'typeorm'
+import { InjectRedis } from '~/common/decorators/inject-redis.decorator'
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
+import { SYS_USER_INITPASSWORD } from '~/constants/system.constant'
+import { genAuthPermKey, genAuthPVKey, genAuthTokenKey, genOnlineUserKey } from '~/helper/genRedisKey'
 import { paginate } from '~/helper/paginate'
 import { Pagination } from '~/helper/paginate/Pagination'
+import { QQService } from '~/shared/helper/qq.service'
 import { randomValue } from '~/utils'
 import { md5 } from '~/utils/crypto'
+import { AccountUpdateDto } from '../auth/dto/account.dto'
 import { RegisterDto } from '../auth/dto/auth.dto'
+import { AccessTokenEntity } from '../auth/entities/access-token.entity'
 import { DeptEntity } from '../system/dept/dept.entity'
+import { ParamConfigService } from '../system/param-config/param-config.service'
 import { RoleEntity } from '../system/role/role.entity'
 import { UserStatus } from './constant'
 import { UserDto, UserQueryDto } from './dto/user.dto'
 import { UserEntity } from './user.entity'
 import { AccountInfo } from './user.model'
-import { InjectRedis } from '~/common/decorators/inject-redis.decorator'
-import Redis from 'ioredis'
-import { genAuthPermKey, genAuthPVKey, genAuthTokenKey, genOnlineUserKey } from '~/helper/genRedisKey'
-import { AccessTokenEntity } from '../auth/entities/access-token.entity'
-import { AccountUpdateDto } from '../auth/dto/account.dto'
-import { QQService } from '~/shared/helper/qq.service'
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
-    // @InjectRepository(RoleEntity) private readonly roleRepository: Repository<RoleEntity>,
+    @InjectRepository(RoleEntity) private readonly roleRepository: Repository<RoleEntity>,
     private readonly entityManager: EntityManager,
     @InjectRedis() private readonly redis: Redis,
-    private readonly qqService: QQService
+    private readonly qqService: QQService,
+    private readonly paramConfigService: ParamConfigService,
   ) {}
 
   /**
@@ -40,43 +43,42 @@ export class UserService {
    * 🔐 权限分配：创建时就分配角色和权限
    * @param dto 用户信息
    */
-  //   async create(dto: UserDto): Promise<void> {
-  //     let { username, password, roleIds, deptId, ...data } = dto
+  async create(dto: UserDto): Promise<void> {
+    let { username, password, roleIds, deptId, ...data } = dto
 
-  //     const exists = await this.userRepository.findOneBy({
-  //       username,
-  //     })
-  //     if (!isEmpty(exists)) {
-  //       throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS)
-  //     }
+    const exists = await this.userRepository.findOneBy({
+      username,
+    })
+    if (!isEmpty(exists)) {
+      throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS)
+    }
 
-  //     await this.entityManager.transaction(async (manager) => {
-  //       const salt = randomValue(32)
+    await this.entityManager.transaction(async (manager) => {
+      const salt = randomValue(32)
 
-  //       if (!password) {
-  //         // const initPassword = await this.paramConfigService.findValueByKey() // 从配置中心获取初始密码
-  //         const initPassword = '123456'
-  //         password = md5(`${initPassword ?? '123456'}${salt}`)
-  //       }
-  //       else {
-  //         password = md5(`${password ?? '123456'}${salt}`)
-  //       }
+      if (!password) {
+        const initPassword = await this.paramConfigService.findValueByKey(SYS_USER_INITPASSWORD) // 从配置中心获取初始密码
+        password = md5(`${initPassword ?? '123456'}${salt}`)
+      }
+      else {
+        password = md5(`${password ?? '123456'}${salt}`)
+      }
 
-  //       const u = manager.create(UserEntity, {
-  //         username,
-  //         password,
-  //         ...data,
-  //         psalt: salt,
-  //         // 使用注入的 Repository
-  //         roles: await this.roleRepository.findBy({ id: In(roleIds) }),
-  //         // 使用 Entity 静态方法；不适用注入的方式是防止循环依赖，因为deptModule已经依赖了userModule了，userModule不能再依赖deptModule
-  //         dept: await DeptEntity.findOneBy({ id: deptId }),
-  //       })
+      const u = manager.create(UserEntity, {
+        username,
+        password,
+        ...data,
+        psalt: salt,
+        // 使用注入的 Repository
+        roles: await this.roleRepository.findBy({ id: In(roleIds) }),
+        // 使用 Entity 静态方法；不适用注入的方式是防止循环依赖，因为deptModule已经依赖了userModule了，userModule不能再依赖deptModule
+        dept: await DeptEntity.findOneBy({ id: deptId }),
+      })
 
-  //       const result = await manager.save(u)
-  //       return result
-  //     })
-  //   }
+      const result = await manager.save(u)
+      return result
+    })
+  }
 
   /**
    * 用户注册
@@ -165,7 +167,7 @@ export class UserService {
       .leftJoinAndSelect('user.dept', 'dept')
       .where('user.id = :id', { id })
       .getOne()
-      
+
     delete user.psalt
 
     return user
@@ -192,22 +194,21 @@ export class UserService {
     return user
   }
 
-
-    /**
-     * 禁用用户
-     * @param uid 用户id
-     * @param accessToken 可选，accessToken
-     */
+  /**
+   * 禁用用户
+   * @param uid 用户id
+   * @param accessToken 可选，accessToken
+   */
   async forbidden(uid: number, accessToken?: string): Promise<void> {
-      await this.redis.del(genAuthPVKey(uid))
-      await this.redis.del(genAuthTokenKey(uid))
-      await this.redis.del(genAuthPermKey(uid))
-      if (accessToken) {
-          const token = await AccessTokenEntity.findOne({
-              where: { value: accessToken }
-          })
-          this.redis.del(genOnlineUserKey(token.id))
-      }
+    await this.redis.del(genAuthPVKey(uid))
+    await this.redis.del(genAuthTokenKey(uid))
+    await this.redis.del(genAuthPermKey(uid))
+    if (accessToken) {
+      const token = await AccessTokenEntity.findOne({
+        where: { value: accessToken },
+      })
+      this.redis.del(genOnlineUserKey(token.id))
+    }
   }
 
   async updateAccountInfo(uid: number, info: AccountUpdateDto): Promise<void> {
@@ -215,7 +216,7 @@ export class UserService {
     if (isEmpty(user)) {
       throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
     }
-    
+
     const data = {
       ...(info.nickname ? { nickname: info.nickname } : null),
       ...(info.email ? { email: info.email } : null),
@@ -233,6 +234,4 @@ export class UserService {
 
     await this.userRepository.update(uid, data)
   }
-
-
 }
