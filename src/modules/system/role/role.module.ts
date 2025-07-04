@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { MenuModule } from '../menu/menu.module'
 import { RoleController } from './role.controller'
 import { RoleEntity } from './role.entity'
 import { RoleService } from './role.service'
@@ -8,7 +9,7 @@ import { RoleService } from './role.service'
   imports: [
     TypeOrmModule.forFeature([RoleEntity]),
 
-    // forwardRef(() => MenuModule),
+    forwardRef(() => MenuModule),
   ],
   controllers: [RoleController],
   providers: [RoleService],

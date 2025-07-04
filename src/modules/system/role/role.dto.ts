@@ -21,7 +21,7 @@ export class RoleDto extends OperatorDto {
   name: string
 
   @IsUnique({ entity: RoleEntity })
-  @ApiProperty({ description: '角色标识' })
+  @ApiProperty({ description: '角色值' })
   @IsString()
   @Matches(/^[a-z0-9]+$/i, { message: '角色值只能包含字母和数字' })
   @MinLength(2, { message: '角色值长度不能小于2' })
@@ -41,6 +41,8 @@ export class RoleDto extends OperatorDto {
   @IsArray()
   menuIds?: number[]
 }
+
+export class RoleUpdateDto extends PartialType(RoleDto) {}
 
 export class RoleQueryDto extends IntersectionType(PagerDto<RoleDto>, PartialType(RoleDto)) {
   @ApiProperty({ description: '角色名称', required: false })
