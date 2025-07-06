@@ -46,6 +46,8 @@ export class MenuEntity extends CompleteEntity {
   @Column({ name: 'ext_open_mode', type: 'tinyint', default: 1, comment: '外链打开方式：1-新窗口，2-当前窗口' })
   extOpenMode: number
 
-  @ManyToMany(() => RoleEntity, role => role.menus)
+  @ManyToMany(() => RoleEntity, role => role.menus, {
+    onDelete: 'CASCADE',
+  })
   roles: Relation<RoleEntity[]>
 }

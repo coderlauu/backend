@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import Redis from 'ioredis'
 import { isEmpty, isNil } from 'lodash'
@@ -7,7 +7,7 @@ import { EntityManager, In, Like, Repository } from 'typeorm'
 import { InjectRedis } from '~/common/decorators/inject-redis.decorator'
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { SYS_USER_INITPASSWORD } from '~/constants/system.constant'
+import { ROOT_ROLE_ID, SYS_USER_INITPASSWORD } from '~/constants/system.constant'
 import { genAuthPermKey, genAuthPVKey, genAuthTokenKey, genOnlineUserKey } from '~/helper/genRedisKey'
 import { paginate } from '~/helper/paginate'
 import { Pagination } from '~/helper/paginate/Pagination'
@@ -21,7 +21,7 @@ import { DeptEntity } from '../system/dept/dept.entity'
 import { ParamConfigService } from '../system/param-config/param-config.service'
 import { RoleEntity } from '../system/role/role.entity'
 import { UserStatus } from './constant'
-import { UserDto, UserQueryDto } from './dto/user.dto'
+import { UserDto, UserQueryDto, UserUpdateDto } from './dto/user.dto'
 import { UserEntity } from './user.entity'
 import { AccountInfo } from './user.model'
 
@@ -141,13 +141,17 @@ export class UserService {
   }: UserQueryDto): Promise<Pagination<UserEntity>> {
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
-      // .leftJoinAndSelect('user.roles', 'roles')
-      // .leftJoinAndSelect('user.dept', 'dept')
+      .leftJoinAndSelect('user.roles', 'roles')
+      .leftJoinAndSelect('user.dept', 'dept')
       .where({
         ...(username ? { username: Like(`%${username}%`) } : null),
         ...(nickname ? { nickname: Like(`%${nickname}%`) } : null),
         ...(!isNil(status) ? { status } : null),
       })
+
+    if (deptId) {
+      queryBuilder.andWhere('dept.id = :deptId', { deptId })
+    }
 
     return paginate(queryBuilder, {
       page,
@@ -211,6 +215,9 @@ export class UserService {
     }
   }
 
+  /**
+   * 更新个人信息
+   */
   async updateAccountInfo(uid: number, info: AccountUpdateDto): Promise<void> {
     const user = await this.userRepository.findOneBy({ id: uid })
     if (isEmpty(user)) {
@@ -233,5 +240,111 @@ export class UserService {
     }
 
     await this.userRepository.update(uid, data)
+  }
+
+  /**
+   * 更新用户信息
+   * @param id 用户id
+   * @param dto 更新信息
+   */
+  async update(id: number, { password, deptId, roleIds, status, ...dto }: UserUpdateDto): Promise<void> {
+    await this.entityManager.transaction(async (manager) => {
+      if (password) {
+        await this.forceUpdatePassword(id, password)
+      }
+
+      await manager.update(UserEntity, id, {
+        ...dto,
+        status,
+      })
+
+      const user = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.roles', 'roles')
+        .leftJoinAndSelect('user.dept', 'dept')
+        .where('user.id = :id', { id })
+        .getOne()
+
+      if (roleIds) {
+        // 先删除当前用户的所有角色
+        // 再插入当前用户所拥有的新的角色
+        await manager.createQueryBuilder()
+          .relation(UserEntity, 'roles')
+          .of(id)
+          .addAndRemove(roleIds, user.roles)
+      }
+
+      if (deptId) {
+        await manager.createQueryBuilder()
+          .relation(UserEntity, 'dept')
+          .of(id)
+          .set(deptId)
+      }
+
+      if (status === 0) {
+        await this.forbidden(id)
+      }
+    })
+  }
+
+  /** 强制更新用户密码 */
+  async forceUpdatePassword(id: number, password: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({ id })
+    if (isEmpty(user)) {
+      throw new BusinessException(ErrorEnum.USER_NOT_FOUND)
+    }
+
+    const passwordInSalt = md5(`${password}${user.psalt}`)
+    await this.userRepository.update({ id }, { password: passwordInSalt })
+    await this.upgradePasswordV(user.id)
+  }
+
+  /** 升级用户版本密码 */
+  async upgradePasswordV(id: number): Promise<void> {
+    const currentVersion = await this.redis.get(genAuthPVKey(id))
+    if (!isEmpty(currentVersion)) {
+      await this.redis.set(genAuthPVKey(id), Number.parseInt(currentVersion) + 1)
+    }
+  }
+
+  /**
+   * 删除用户
+   * @param ids 用户id
+   */
+  async delete(userIds: number[]): Promise<void> {
+    const rootUserId = await this.findRootUserId()
+    if (userIds.includes(rootUserId)) {
+      throw new BadRequestException('不能删除超级管理员')
+    }
+
+    await this.userRepository.delete(userIds)
+  }
+
+  /** 查找超级管理员id */
+  async findRootUserId(): Promise<number> {
+    const user = await this.userRepository.findOneBy({
+      roles: { id: ROOT_ROLE_ID },
+    })
+    return user.id
+  }
+
+  /**
+   * 批量禁用用户
+   * @param userIds 用户ids
+   */
+  async multiForbidden(userIds: number[]): Promise<void> {
+    if (userIds) {
+      const pvs: string[] = []
+      const tokens: string[] = []
+      const perms: string[] = []
+      userIds.forEach((uid) => {
+        pvs.push(genAuthPVKey(uid))
+        tokens.push(genAuthTokenKey(uid))
+        perms.push(genAuthPermKey(uid))
+      })
+      await this.redis.del(pvs)
+      await this.redis.del(tokens)
+      await this.redis.del(perms)
+    }
   }
 }

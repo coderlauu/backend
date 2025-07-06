@@ -33,9 +33,9 @@ export function ApiResult<TModel extends Type<any>>({
       prop = {
         type: 'object',
         properties: {
-          list: {
+          items: {
             type: 'array',
-            list: { $ref: getSchemaPath(type[0]) },
+            items: { $ref: getSchemaPath(type[0]) },
           },
           meta: {
             type: 'object',
@@ -53,7 +53,7 @@ export function ApiResult<TModel extends Type<any>>({
     else {
       prop = {
         type: 'array',
-        list: genBaseProp(type[0]),
+        items: genBaseProp(type[0]),
       }
     }
   }

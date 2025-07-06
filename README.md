@@ -30,14 +30,15 @@ docker compose --env-file .env --env-file .env.development run -d --service-port
   4.0 创建容器
   4.1 挂载数据卷：
     - ./__data/mysql → /var/lib/mysql (数据持久化)
+      - 当你在开发环境下对数据库的所有操作，都会实时被同步到/var/lib/mysql下，下次启动docker时，会加载到这些数据
     - ./deploy/sql → /docker-entrypoint-initdb.d/ (初始化脚本)
   4.2 设置环境变量
   4.3 启动 MySQL 服务
 5. 数据库初始化阶段 ⭐
-MySQL 官方镜像有个特殊机制：
+MySQL 官方镜像有个特殊机制：   
 ✅ 会自动执行初始化脚本的情况：
 - 当 /var/lib/mysql 目录为空时（第一次启动）
-- 自动执行 /docker-entrypoint-initdb.d/ 目录下的脚本（支持.sql、.sh、.sql.gz文件类型）
+- 自动执行 /docker-entrypoint-initdb.d/ 目录下的脚本（支持.sql、.sh、.sql.gz文件类型）   
 ❌ 不会执行初始化脚本的情况：
 - 当 ./__data/mysql/ 文件夹已存在数据时
 - 这就是为什么您看到注释：# 初始化的脚本，若 ./__data/mysql/ 文件夹存在数据，则不会执行初始化脚本

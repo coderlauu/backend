@@ -7,7 +7,7 @@ import { InjectRedis } from '~/common/decorators/inject-redis.decorator'
 import { BusinessException } from '~/common/exceptions/biz.exception'
 import { SecurityConfig, TSecurityConfig } from '~/config/security.config'
 import { ErrorEnum } from '~/constants/error-code.constant'
-import { genAuthPVKey, genAuthTokenKey, genTokenBlacklistKey } from '~/helper/genRedisKey'
+import { genAuthPermKey, genAuthPVKey, genAuthTokenKey, genTokenBlacklistKey } from '~/helper/genRedisKey'
 import { md5 } from '~/utils/crypto'
 import { LoginLogService } from '../system/log/services/login-log.service'
 import { RoleService } from '../system/role/role.service'
@@ -133,11 +133,22 @@ export class AuthService {
   }
 
   /**
-   * 获取用户权限
+   * 获取用户权限 -- 从数据库中获取
    * @param uid 用户id
    * @returns 权限列表
    */
   async getPermissions(uid: number): Promise<string[]> {
     return await this.menuService.getPermissions(uid)
   }
+
+  /**
+   * 获取用户权限 -- 从redis中获取
+   * @param uid 用户id
+   * @returns 权限列表
+   */
+  async getPermissionsCache(uid: number): Promise<string[]> {
+    const permissionString = await this.redis.get(genAuthPermKey(uid))
+    return permissionString ? JSON.parse(permissionString) : []
+  }
+
 }

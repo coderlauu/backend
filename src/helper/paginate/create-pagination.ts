@@ -2,12 +2,12 @@ import { IPaginationMeta } from './interface'
 import { Pagination } from './Pagination'
 
 export function createPaginationObject<T>({
-  list,
+  items,
   totalItems,
   currentPage,
   limit,
 }: {
-  list: T[]
+  items: T[]
   totalItems?: number
   currentPage: number
   limit: number
@@ -18,9 +18,9 @@ export function createPaginationObject<T>({
     totalItems,
     totalPages,
     itemsPerPage: limit,
-    itemCount: list.length, // 当前页的实际数据条数
+    itemCount: items.length, // 当前页的实际数据条数
     currentPage,
   }
 
-  return new Pagination<T>(list, meta)
+  return new Pagination<T>(items, meta)
 }

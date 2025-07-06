@@ -15,6 +15,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard'
 import { SystemModule } from './modules/system/system.module'
 import { DatabaseModule } from './shared/database/database.module'
 import { SharedModule } from './shared/shared.module'
+import { ToolsModule } from './modules/tools/tools.module'
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { SharedModule } from './shared/shared.module'
     DatabaseModule,
     AuthModule,
     SystemModule,
+    ToolsModule
   ],
   providers: [
     /**

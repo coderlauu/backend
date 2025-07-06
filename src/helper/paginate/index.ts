@@ -46,10 +46,10 @@ async function paginateRepository<T>(
     repository.count(searchOptions),
   ]
 
-  const [list, total] = await Promise.all(promises)
+  const [items, total] = await Promise.all(promises)
 
   return createPaginationObject<T>({
-    list,
+    items,
     totalItems: total,
     currentPage: page,
     limit,
@@ -78,10 +78,10 @@ async function paginateQueryBuilder<T>(
     queryBuilder.limit(limit).offset((page - 1) * limit) // sql语句，同上-> limit == take 、 offset == skip
   }
 
-  const [list, total] = await queryBuilder.getManyAndCount()
+  const [items  , total] = await queryBuilder.getManyAndCount()
 
   return createPaginationObject<T>({
-    list,
+    items,
     totalItems: total,
     currentPage: page,
     limit,
@@ -123,4 +123,28 @@ export async function paginate<T extends ObjectLiteral>(
   return repositoryOrQueryBuilder instanceof Repository
     ? paginateRepository<T>(repositoryOrQueryBuilder, options, searchOptions)
     : paginateQueryBuilder<T>(repositoryOrQueryBuilder, options)
+}
+
+export async function paginateRaw<T>(
+  queryBuilder: SelectQueryBuilder<T>,
+  options: IPaginationOptions,
+): Promise<Pagination<T>> {
+  const [page, limit, paginationType] = resolveOptions(options)
+
+  const promises: [Promise<T[]>, Promise<number> | undefined] = [
+    (paginationType === PaginationTypeEnum.LIMIT_AND_OFFSET
+      ? queryBuilder.limit(limit).offset((page - 1) * limit)
+      : queryBuilder.take(limit).skip((page - 1) * limit)
+    ).getRawMany<T>(),
+    queryBuilder.getCount(),
+  ]
+
+  const [items, total] = await Promise.all(promises)
+
+  return createPaginationObject<T>({
+    items,
+    totalItems: total,
+    currentPage: page,
+    limit,
+  })
 }

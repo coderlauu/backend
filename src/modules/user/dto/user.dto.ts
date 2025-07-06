@@ -72,6 +72,11 @@ export class UserDto {
 export class UserUpdateDto extends PartialType(UserDto) {}
 
 export class UserQueryDto extends IntersectionType(PagerDto<UserDto>, PartialType(UserDto)) {
+  @ApiProperty({ description: '登录账号', example: 'admin', required: false })
+  @IsString()
+  @IsOptional()
+  username?: string
+
   @ApiProperty({ description: '归属大区', example: 1, required: false })
   @IsInt()
   @IsOptional()

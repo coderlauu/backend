@@ -18,7 +18,7 @@ declare global {
     }
 
     export interface IListRespData<T = any> {
-        list: T[]
+        items: T[]
     }
 }
 
