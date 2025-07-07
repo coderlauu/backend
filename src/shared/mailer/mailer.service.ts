@@ -102,7 +102,9 @@ export class MailerService {
    * @param type 邮件类型
    * @returns
    */
-  async send(to, subject, content: string, type: 'text' | 'html' = 'text') {
+  async send(to, subject, content: string, type: 'text' | 'html' = 'text', ip: string) {
+    await this.checkLimit(to, ip)
+
     if (type === 'text') {
       return this.mailerService.sendMail({
         to,

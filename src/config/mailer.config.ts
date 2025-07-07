@@ -1,19 +1,21 @@
-import { ConfigType, registerAs } from "@nestjs/config"
-import { register } from "module"
-import { env, envOfNumber } from "~/global/env"
-
+import { ConfigType, registerAs } from '@nestjs/config'
+import { env, envOfNumber } from '~/global/env'
 
 export const mailerKey = 'mailer'
 
-export const MailerConfig = registerAs(mailerKey, () => ({
+export const MailerConfig = registerAs(mailerKey, () => {
+  const port = envOfNumber('SMTP_PORT')
+
+  return {
     host: env('SMTP_HOST'),
-    port: envOfNumber('SMTP_PORT'),
-    ignoreTLS: true,
-    secure: true,
+    port,
+    // 根据端口自动配置加密方式
+    secure: port === 465, // 465端口使用SSL
     auth: {
-        user: env('SMTP_USER'),
-        pass: env('SMTP_PASS')
-    }
-}))
+      user: env('SMTP_USER'),
+      pass: env('SMTP_PASS'),
+    },
+  }
+})
 
 export type TMailerConfig = ConfigType<typeof MailerConfig>
