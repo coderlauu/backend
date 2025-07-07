@@ -1,8 +1,9 @@
-import { Global, Module } from '@nestjs/common'
-import { LoggerModule } from './logger/logger.module'
-import { RedisModule } from './redis/redis.module'
-import { HelperModule } from './helper/helper.module'
 import { HttpModule } from '@nestjs/axios'
+import { Global, Module } from '@nestjs/common'
+import { HelperModule } from './helper/helper.module'
+import { LoggerModule } from './logger/logger.module'
+import { MailerModule } from './mailer/mailer.module'
+import { RedisModule } from './redis/redis.module'
 
 @Global()
 @Module({
@@ -11,8 +12,9 @@ import { HttpModule } from '@nestjs/axios'
     LoggerModule.forRoot(),
     RedisModule,
     HttpModule,
-    HelperModule
+    HelperModule,
+    MailerModule,
   ],
-  exports: [RedisModule, HttpModule, HelperModule],
+  exports: [RedisModule, HttpModule, HelperModule, MailerModule],
 })
 export class SharedModule {}

@@ -5,10 +5,14 @@ import { securityKey, TSecurityConfig } from './security.config'
 import { SecurityConfig } from './security.config'
 import { redisKey, TRedisConfig } from './redis.config'
 import { RedisConfig } from './redis.config'
+import { mailerKey, MailerConfig, TMailerConfig } from './mailer.config'
 
 export * from './app.config'
 export * from './database.config'
 export * from './swagger.config'
+export * from './redis.config'
+export * from './mailer.config'
+export * from './security.config'
 
 export interface AllConfigType {
   [appKey]: TAppConfig
@@ -16,6 +20,7 @@ export interface AllConfigType {
   [dbKey]: TDatabaseConfig
   [securityKey]: TSecurityConfig
   [redisKey]: TRedisConfig
+  [mailerKey]: TMailerConfig
 }
 
 export type ConfigKeyPaths = RecordNamePaths<AllConfigType>
@@ -25,5 +30,6 @@ export default {
   SwaggerConfig,
   DatabaseConfig,
   SecurityConfig,
-  RedisConfig
+  RedisConfig,
+  MailerConfig
 }

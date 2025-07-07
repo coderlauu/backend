@@ -30,11 +30,8 @@ export class MenuService {
    * @returns 菜单列表
    */
   async getMenus(uid: number) {
-    console.log('=== 菜单查询调试 ===')
-    console.log('用户ID:', uid)
     // 1、先获取该用户所拥有的角色ids
     const roleIds = await this.roleService.getRoleIdsByUser(uid)
-    console.log('用户角色IDs:', roleIds)
 
     // 3、如果用户没有角色，则返回空数组
     if (isEmpty(roleIds)) {
@@ -42,11 +39,8 @@ export class MenuService {
     }
 
     const isAdmin = this.roleService.hasAdminRole(roleIds)
-    console.log('是否超级管理员:', isAdmin)
     if (isAdmin) {
       const menus = await this.menuRepository.find({ order: { orderNo: 'ASC' } })
-      console.log('超级管理员查询到的菜单数量:', menus.length)
-      console.log('菜单列表:', menus.map(m => ({ id: m.id, name: m.name, status: m.status })))
       
       return generatorRouters(menus)
     }

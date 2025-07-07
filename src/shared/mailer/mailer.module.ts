@@ -1,10 +1,11 @@
 import { Module } from "@nestjs/common";
-import { MailerService, MailerModule as NestMailerModule } from '@nestjs-modules/mailer'
+import { MailerModule as NestMailerModule } from '@nestjs-modules/mailer'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { appKey, ConfigKeyPaths, TAppConfig } from "~/config";
 import { TMailerConfig, mailerKey } from "~/config/mailer.config";
 import { join } from "node:path";
+import { MailerService } from "./mailer.service";
 
 
 const providers = [MailerService]
