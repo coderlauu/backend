@@ -2,10 +2,11 @@ version: '3'
 
 services:
   nest-admin-web:
-    image: buqiyuan/vue3-antdv-admin:stable
+    image: nginx:alpine
     container_name: nest-admin-web
     volumes:
       - ./deploy/web:/etc/nginx/conf.d
+      - ./dist:/usr/share/nginx/html
     ports:
       - '80:80'
     restart: always

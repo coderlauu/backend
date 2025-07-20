@@ -21,13 +21,13 @@ const providers = [MailerService]
             address: configService.get<TMailerConfig>(mailerKey as any).auth.user,
           },
         },
-        template: {
-          dir: join(__dirname, '..', '..', '/assets/templates'),
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: true,
-          },
-        },
+        // template: {
+        //   dir: join(__dirname, '..', '..', '/assets/templates'),
+        //   adapter: new HandlebarsAdapter(),
+        //   options: {
+        //     strict: true,
+        //   },
+        // },
       }),
       inject: [ConfigService],
     }),
