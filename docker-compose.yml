@@ -7,7 +7,7 @@ services:
     restart: always
     env_file:
       - .env
-      - .env.development
+      - .env.production
     environment:
       - MYSQL_HOST=${DB_HOST}
       - MYSQL_PORT=${DB_PORT}

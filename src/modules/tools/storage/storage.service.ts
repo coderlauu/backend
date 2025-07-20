@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { StoragePageDto } from "./storage.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Between, Like, Repository } from "typeorm";
-import { Pagination } from "~/helper/paginate/Pagination";
+import { Pagination } from "~/helper/paginate/pagination";
 import { UserEntity } from "~/modules/user/user.entity";
 import { paginateRaw } from "~/helper/paginate";
 import { PaginationTypeEnum } from "~/helper/paginate/interface";

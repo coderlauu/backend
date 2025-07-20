@@ -31,6 +31,18 @@ export class UserDto {
   roleIds: number[]
 
   @ApiProperty({ description: '所属部门', type: Number })
+  /**
+   * 补充： 如果请求参数传的是嵌套的对象数组，则可以结合这个装饰器来校验对象中的每个key是否符合要求
+   * 例如：以下代码，可以校验metaOptions中的name和value是否符合要求
+   * @ValidateNested({ each: true })
+   * @Type(() => xxxOptionsDto)
+   * metaOptions: xxxOptionsDto[]
+   *
+   * xxxOptionsDto {
+   *  name: string,
+   *  value: string
+   * }
+   */
   @Type(() => Number)
   @IsInt()
   @IsOptional()

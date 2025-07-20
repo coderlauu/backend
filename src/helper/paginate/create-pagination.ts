@@ -1,5 +1,5 @@
 import { IPaginationMeta } from './interface'
-import { Pagination } from './Pagination'
+import { Pagination } from './pagination'
 
 export function createPaginationObject<T>({
   items,

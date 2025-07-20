@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { paginate } from '~/helper/paginate'
-import { Pagination } from '~/helper/paginate/Pagination'
+import { Pagination } from '~/helper/paginate/pagination'
 import { ParamConfigDto, ParamConfigQueryDto } from './param-config.dto'
 import { ParamConfigEntity } from './param-config.entity'
 

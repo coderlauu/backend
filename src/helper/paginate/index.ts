@@ -1,7 +1,7 @@
 import { FindManyOptions, FindOptionsWhere, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm'
 import { createPaginationObject } from './create-pagination'
 import { IPaginationOptions, PaginationTypeEnum } from './interface'
-import { Pagination } from './Pagination'
+import { Pagination } from './pagination'
 
 const DEFAULT_PAGE = 1
 const DEFAULT_LIMIT = 10
@@ -78,7 +78,7 @@ async function paginateQueryBuilder<T>(
     queryBuilder.limit(limit).offset((page - 1) * limit) // sql语句，同上-> limit == take 、 offset == skip
   }
 
-  const [items  , total] = await queryBuilder.getManyAndCount()
+  const [items, total] = await queryBuilder.getManyAndCount()
 
   return createPaginationObject<T>({
     items,

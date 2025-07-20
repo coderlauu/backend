@@ -29,9 +29,9 @@ export const permissions = definePermission('system:task', {
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
-  @Post()
-  async create(@Body() dto: TaskDto) {
-    const [service, method] = dto.service.split('.')
-    await this.taskService.checkHasMissionMeta(service, method)
-  }
+  // @Post()
+  // async create(@Body() dto: TaskDto) {
+  //   const [service, method] = dto.service.split('.')
+  //   await this.taskService.checkHasMissionMeta(service, method)
+  // }
 }
