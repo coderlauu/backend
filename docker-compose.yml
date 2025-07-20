@@ -1,17 +1,17 @@
 version: '3'
 
 services:
-  nest-admin-web:
-    image: nginx:alpine
-    container_name: nest-admin-web
-    volumes:
-      - ./deploy/web:/etc/nginx/conf.d
-      - ./dist:/usr/share/nginx/html
-    ports:
-      - '80:80'
-    restart: always
-    networks:
-      - nest_react_admin_net
+  #nest-admin-web:
+  #  image: nginx:alpine
+  #  container_name: nest-admin-web
+  #  volumes:
+  #    - ./deploy/web:/etc/nginx/conf.d
+  #    - ./dist:/usr/share/nginx/html
+  #  ports:
+  #    - '8080:80'
+  #  restart: always
+  #  networks:
+  #    - nest_react_admin_net
   mysql:
     image: mysql:latest
     container_name: nest-react-admin-mysql
