@@ -71,7 +71,7 @@ lerna-debug.log*
 out
 
 # temp data
-__data
+# __data
 
 public/upload
 types/env.d.ts
